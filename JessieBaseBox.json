@@ -4,9 +4,11 @@
 			"type": "virtualbox-iso",
 			"guest_os_type": "Debian_64",
 			"iso_url": "http://cdimage.debian.org/debian-cd/8.1.0/amd64/iso-cd/debian-8.1.0-amd64-netinst.iso",
-			"iso_checksum": "1a311f9afb68d6365211b13b4342c40",
-			"iso_checksum_type": "md5",
-			""
+			"iso_checksum": "5d0a1f804d73aee73eee7efbb38456390558094fd19894a573f1514ca44347e0",
+			"iso_checksum_type": "sha256",
+			"ssh_username": "vagrant",
+			"ssh_password": "vagrant"
+			"shutdown_command:": "echo 'vagrant' | sudo -S shutdown -P now"
 		}
 	]
 }
