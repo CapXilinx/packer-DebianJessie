@@ -2,6 +2,7 @@
 	"builders": [
 		{
 			"type": "virtualbox-iso",
+			"headless:": "true",
 			"guest_os_type": "Debian_64",
 			"iso_url": "http://cdimage.debian.org/debian-cd/8.1.0/amd64/iso-cd/debian-8.1.0-amd64-netinst.iso",
 			"iso_checksum": "5d0a1f804d73aee73eee7efbb38456390558094fd19894a573f1514ca44347e0",
