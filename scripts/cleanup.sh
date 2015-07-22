@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/bin/bash -x
+
 echo '==> Starting clean up phase...'
 
 echo '==> Cleaning up udev rules...'
@@ -15,13 +16,31 @@ fi
 echo "==> Cleaning up tmp..."
 rm -rf /tmp/*
 
+echo "==> Remove 5s grub timeout to speed up booting..."
+cat <<EOF > /etc/default/grub
+# If you change this file, run 'update-grub' afterwards to update
+# /boot/grub/grub.cfg.
+
+GRUB_DEFAULT=0
+GRUB_TIMEOUT=0
+GRUB_DISTRIBUTOR=`lsb_release -i -s 2> /dev/null || echo Debian`
+GRUB_CMDLINE_LINUX_DEFAULT="quiet"
+GRUB_CMDLINE_LINUX="debian-installer=en_US"
+EOF
+
+update-grub
+
+NOT_NEEDED_PACKAGES="acpi acpi-support-base acpid bluetooth bluez laptop-detect"
+echo '==> Removing packages...'
+apt-get -y remove --purge $NOT_NEEDED_PACKAGES
+
 echo '==> Cleaning up APT cache...'
 apt-get -y autoremove --purge
 apt-get -y clean
 apt-get -y autoclean
 
-echo '==> Cleaning deinstalled packages...'
-dpkg --get-selections | grep -v deinstall
+# echo '==> Showing installed packages...'
+# dpkg --get-selections | grep -v deinstall
 
 echo '==> Cleaning BASH history'
 unset HISTFILE
@@ -33,13 +52,13 @@ find /var/log -type f | while read f; do echo -ne '' > $f; done;
 
 echo 'Whiteout root...'
 count=$(df --sync -kP / | tail -n1  | awk -F ' ' '{print $4}')
-let count--
+count=`expr $count - 1`
 dd if=/dev/zero of=/tmp/whitespace bs=1024 count=$count
 rm /tmp/whitespace
 
 echo 'Whiteout /boot...'
 count=$(df --sync -kP /boot | tail -n1 | awk -F ' ' '{print $4}')
-let count--
+count=`expr $count - 1`
 dd if=/dev/zero of=/boot/whitespace bs=1024 count=$count
 rm /boot/whitespace
 

@@ -1,16 +1,21 @@
 {
+	"push": {
+      "name": "",
+      "vcs": true
+    },
 	"variables": {
+		"atlas_username": "{{env `ATLAS_USERNAME`}}",
+        "atlas_name": "{{env `ATLAS_NAME`}}",
 		"guest_os_type": "Debian_64",
 		"iso_url": "http://cdimage.debian.org/debian-cd/8.1.0/amd64/iso-cd/debian-8.1.0-amd64-netinst.iso",
 		"iso_checksum": "5d0a1f804d73aee73eee7efbb38456390558094fd19894a573f1514ca44347e0",
-		"iso_checksum_type": "sha256",
-		"cleanup_pause": ""
+		"iso_checksum_type": "sha256"
 	},
 	"builders": [
 		{
 			"type": "virtualbox-iso",
 			"boot_command" : ["<esc><wait>","auto url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg<enter>"],
-			"headless": "false",
+			"headless": true,
 			"guest_os_type": "{{ user `guest_os_type` }}",
 			"http_directory": "http",
 			"iso_url": "{{ user `iso_url` }}",
@@ -21,16 +26,35 @@
             "ssh_port": 22,
             "ssh_wait_timeout": "10000s",
 			"shutdown_command": "echo 'vagrant' | sudo -S shutdown -P now",
+			"guest_additions_mode": "upload",
 			"guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
             "virtualbox_version_file": ".vbox_version"
 		}
 	],
 	"provisioners": [
 		{
+			"execute_command": "{{ .Vars }} sudo -E sh '{{ .Path }}'",
 			"scripts": [
+				"scripts/VBoxGuestAdditions.sh",
+				"scripts/VagrantSSHSetup.sh",
 				"scripts/cleanup.sh"
 			], "type": "shell", "pause_before": "10s"
-
 		}
+	],
+	"post-processors": [
+		[{
+			"type": "vagrant",
+			"keep_input_artifact": false
+		},
+		{
+			"type": "atlas",
+			"only": ["virtualbox-iso"],
+			"artifact": "{{user `atlas_username`}}/{{user `atlas_name`}}",
+			"artifact_type": "vagrant.box",
+			"metadata": {
+				"provider": "virtualbox",
+				"version": "0.0.1"
+			}
+		}]
 	]
 }
